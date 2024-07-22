@@ -14,6 +14,7 @@ type LineReader interface {
 func SyncListen(stream *child.IOStream, listeners []LineReader) {
 	scanner := bufio.NewScanner(stream.Out())
 	for scanner.Scan() {
+		logger.Log("New Output")
 		line := scanner.Text()
 		logger.Output(line)
 		for _, l := range listeners {
@@ -23,4 +24,5 @@ func SyncListen(stream *child.IOStream, listeners []LineReader) {
 	for _, l := range listeners {
 		l.Close()
 	}
+	logger.Log("STDOUT closed")
 }

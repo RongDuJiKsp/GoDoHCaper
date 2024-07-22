@@ -2,6 +2,7 @@ package child
 
 import (
 	"io"
+	"os"
 	"os/exec"
 )
 
@@ -41,5 +42,8 @@ func CreateChildProcess(commandName string, arg ...string) (*Process, error) {
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
+	go func() {
+		_, _ = io.Copy(os.Stderr, childErr)
+	}()
 	return &Process{&IOStream{childIn, childOut}, childErr, cmd}, nil
 }
