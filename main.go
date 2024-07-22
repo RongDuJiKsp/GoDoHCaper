@@ -31,7 +31,7 @@ func main() {
 				}
 			}
 		}, &isRunning)
-		go godoh.SyncListen(stream, []godoh.LineReader{i})
+		godoh.SyncListen(stream, []godoh.LineReader{i})
 	})
 	p.Wait()
 }
