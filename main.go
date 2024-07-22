@@ -33,5 +33,6 @@ func main() {
 		}, &isRunning)
 		godoh.SyncListen(stream, []godoh.LineReader{i})
 	})
+	logger.Log("等待退出")
 	p.Wait()
 }
