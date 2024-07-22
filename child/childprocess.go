@@ -24,8 +24,8 @@ type Process struct {
 	cmd    *exec.Cmd
 }
 
-func CreateChildProcess(commandName string) (*Process, error) {
-	cmd := exec.Command(commandName)
+func CreateChildProcess(commandName string, arg ...string) (*Process, error) {
+	cmd := exec.Command(commandName, arg...)
 	childIn, err := cmd.StdinPipe()
 	if err != nil {
 		return nil, err
