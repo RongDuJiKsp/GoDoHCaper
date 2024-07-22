@@ -14,10 +14,10 @@ type LineReader interface {
 func SyncListen(stream *child.IOStream, listeners []LineReader) {
 	scanner := bufio.NewScanner(stream.Out())
 	for scanner.Scan() {
-		line := scanner.Bytes()
-		logger.Output(string(line))
+		line := scanner.Text()
+		logger.Output(line)
 		for _, l := range listeners {
-			l.NextLine(line)
+			l.NextLine([]byte(line))
 		}
 	}
 	for _, l := range listeners {

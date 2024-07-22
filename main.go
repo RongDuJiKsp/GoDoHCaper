@@ -15,11 +15,10 @@ func main() {
 	logger.Log("子进程创建成功")
 	p.Handle(func(stream *child.IOStream) {
 		isRunning := true
-		sendDuration := 3000 * time.Second
+		sendDuration := 15 * time.Second
 		sendCommands := []string{"ls -a"}
 		logger.Log("系统启动")
 		i := godoh.NewIdentityReader(stream)
-		i.RequestIdentity()
 		go i.SyncTickHandle(sendDuration, func(identity []string) {
 			for _, id := range identity {
 				logger.Log("正在处理 " + id)
