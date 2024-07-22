@@ -24,7 +24,9 @@ func main() {
 			logger.Log("当前已连接客户端数：" + strconv.Itoa(len(identity)))
 			for _, id := range identity {
 				logger.Log("正在处理 " + id)
-				i.Use(id)
+				if len(identity) > 1 {
+					i.Use(id)
+				}
 				for _, cmd := range sendCommands {
 					logger.Log("执行命令：" + cmd)
 					i.Run(cmd)

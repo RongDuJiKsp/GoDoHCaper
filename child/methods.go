@@ -3,7 +3,6 @@ package child
 func (p *Process) closeAll() {
 	_ = p.stream.in.Close()
 	_ = p.stream.out.Close()
-	_ = p.err.Close()
 }
 func (p *Process) Wait() {
 	_ = p.cmd.Wait()

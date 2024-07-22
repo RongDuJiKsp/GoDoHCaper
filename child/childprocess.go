@@ -2,7 +2,6 @@ package child
 
 import (
 	"io"
-	"os"
 	"os/exec"
 )
 
@@ -21,7 +20,6 @@ func (I *IOStream) Out() io.ReadCloser {
 
 type Process struct {
 	stream *IOStream
-	err    io.ReadCloser
 	cmd    *exec.Cmd
 }
 
@@ -35,15 +33,9 @@ func CreateChildProcess(commandName string, arg ...string) (*Process, error) {
 	if err != nil {
 		return nil, err
 	}
-	childErr, err := cmd.StderrPipe()
-	if err != nil {
-		return nil, err
-	}
+	cmd.Stderr = cmd.Stdout
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
-	go func() {
-		_, _ = io.Copy(os.Stderr, childErr)
-	}()
-	return &Process{&IOStream{childIn, childOut}, childErr, cmd}, nil
+	return &Process{&IOStream{childIn, childOut}, cmd}, nil
 }

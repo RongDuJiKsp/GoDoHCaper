@@ -40,6 +40,7 @@ func (i *IdentityReader) NextLine(line []byte) {
 		id, err := getIdByRegisterLine(strLine)
 		if err == nil {
 			i.registerIdentity = append(i.registerIdentity, id)
+			i.Use(id)
 		}
 	}
 }
