@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	p, err := child.CreateChildProcess(`godoh`)
+	p, err := child.CreateChildProcess(`./godoh`)
 	if err != nil {
 		panic(err)
 	}
