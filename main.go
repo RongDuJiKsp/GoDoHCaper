@@ -12,6 +12,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	logger.Log("子进程创建成功")
 	p.Handle(func(stream *child.IOStream) {
 		isRunning := true
 		sendDuration := 3000 * time.Second
