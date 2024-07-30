@@ -23,5 +23,5 @@ func SyncListen(stream *child.IOStream, listeners []LineReader) {
 	for _, l := range listeners {
 		l.Close()
 	}
-	logger.Log("STDOUT closed")
+	logger.Log("std::out closed")
 }

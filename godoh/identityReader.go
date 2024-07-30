@@ -1,32 +1,34 @@
 package godoh
 
 import (
+	"bufio"
 	"errors"
-	"fmt"
 	"go-godoh-proxy/child"
-	"io"
 	"strings"
 	"time"
 )
 
 type IdentityReader struct {
 	stream           *child.IOStream
-	registerIdentity []string
+	registerIdentity string
 }
 
 func NewIdentityReader(stream *child.IOStream) *IdentityReader {
-	return &IdentityReader{stream, nil}
+	return &IdentityReader{stream, ""}
+}
+
+func (i *IdentityReader) Run(cmd string) {
+	writer := bufio.NewWriter(i.stream.In())
+	_, _ = writer.WriteString(cmd + "\n")
+	_ = writer.Flush()
 }
 func (i *IdentityReader) RequestIdentity() {
-	_, _ = io.WriteString(i.stream.In(), "agents\n")
+	i.Run("agents")
 }
 func (i *IdentityReader) Use(identity string) {
-	_, _ = io.WriteString(i.stream.In(), fmt.Sprintf("use %s \n", identity))
+	i.Run("use " + identity)
 }
-func (i *IdentityReader) Run(cmd string) {
-	_, _ = io.WriteString(i.stream.In(), cmd+"\n")
-}
-func (i *IdentityReader) SyncTickHandle(duration time.Duration, fn func(identity []string), running *bool) {
+func (i *IdentityReader) SyncTickHandle(duration time.Duration, fn func(identity string), running *bool) {
 	for range time.Tick(duration) {
 		if !*running {
 			break
@@ -39,7 +41,7 @@ func (i *IdentityReader) NextLine(line []byte) {
 	if strings.Contains(strLine, "First time checkin for agent") {
 		id, err := getIdByRegisterLine(strLine)
 		if err == nil {
-			i.registerIdentity = append(i.registerIdentity, id)
+			i.registerIdentity = id
 			i.Use(id)
 		}
 	}

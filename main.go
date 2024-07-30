@@ -4,7 +4,6 @@ import (
 	"go-godoh-proxy/child"
 	"go-godoh-proxy/godoh"
 	"go-godoh-proxy/logger"
-	"strconv"
 	"time"
 )
 
@@ -17,20 +16,17 @@ func main() {
 	p.Handle(func(stream *child.IOStream) {
 		isRunning := true
 		sendDuration := 75 * time.Second
-		sendCommands := []string{"ls -a"}
+		sendCommands := []string{
+			"ls -a",
+		}
 		logger.Log("系统启动")
 		i := godoh.NewIdentityReader(stream)
-		go i.SyncTickHandle(sendDuration, func(identity []string) {
-			logger.Log("当前已连接客户端数：" + strconv.Itoa(len(identity)))
-			for _, id := range identity {
-				logger.Log("正在处理 " + id)
-				if len(identity) > 1 {
-					i.Use(id)
-				}
-				for _, cmd := range sendCommands {
-					logger.Log("执行命令：" + cmd)
-					i.Run(cmd)
-				}
+		go i.SyncTickHandle(sendDuration, func(identity string) {
+			logger.Log("当前已连接客户端：" + identity)
+			logger.Log("正在处理 " + identity)
+			for _, cmd := range sendCommands {
+				logger.Log("执行命令：" + cmd)
+				i.Run(cmd)
 			}
 		}, &isRunning)
 		godoh.SyncListen(stream, []godoh.LineReader{i})
