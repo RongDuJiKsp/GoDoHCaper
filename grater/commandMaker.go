@@ -7,5 +7,5 @@ import (
 
 func MakeFileTransferCommand() string {
 	randomNumber := rand.Intn(1500) + 1
-	return fmt.Sprintf("download file-%d.txt", randomNumber)
+	return fmt.Sprintf("download ./random_files/file-%d.txt", randomNumber)
 }
