@@ -33,6 +33,9 @@ func (i *IdentityReader) SyncTickHandle(duration time.Duration, fn func(identity
 		if !*running {
 			break
 		}
+		if i.registerIdentity == "" {
+			continue
+		}
 		fn(i.registerIdentity)
 	}
 }
