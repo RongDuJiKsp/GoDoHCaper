@@ -1,22 +1,31 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"go-godoh-damon/tools"
 	"os/exec"
+	"time"
 )
 
+func run(cmd *exec.Cmd) {
+	_ = cmd.Run()
+}
+
 func main() {
-	fmt.Println("启动守护进程")
-	for {
-		fmt.Println("启动子进程")
-		cmd := exec.Command(`godoh`, "agent", "-d", "tunnel.safecv.cn", "-p", "cloudflare")
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err := cmd.Run()
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
+	nowProcess := tools.NewProcessToRun()
+	go run(nowProcess)
+	for p := range makeCommandChan() {
+		_ = nowProcess.Process.Kill()
+		nowProcess = p
+		go run(p)
 	}
+
+}
+func makeCommandChan() chan *exec.Cmd {
+	ch := make(chan *exec.Cmd)
+	go func() {
+		for range time.Tick(time.Minute * 8) {
+			ch <- tools.NewProcessToRun()
+		}
+	}()
+	return ch
 }
