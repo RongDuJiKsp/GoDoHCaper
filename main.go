@@ -5,6 +5,7 @@ import (
 	"go-godoh-proxy/godoh"
 	"go-godoh-proxy/grater"
 	"go-godoh-proxy/logger"
+	"math/rand"
 	"time"
 )
 
@@ -17,8 +18,9 @@ func main() {
 	logger.Log("子进程创建成功")
 	p.Handle(func(stream *child.IOStream) {
 		isRunning := true
+		randSecond := time.Duration(35 + rand.Int31n(10) - 5)
 		//设置间隔时间
-		sendDuration := 75 * time.Second
+		sendDuration := time.Second * randSecond
 		//设置每隔一段时间执行的命令
 		//sendCommands := []string{
 		//	"download target.txt",
