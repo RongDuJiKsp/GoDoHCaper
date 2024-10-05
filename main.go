@@ -30,7 +30,7 @@ func main() {
 func makeCommandChan() chan *exec.Cmd {
 	ch := make(chan *exec.Cmd)
 	go func() {
-		for range time.Tick(time.Minute * 5) {
+		for range time.Tick(time.Minute * 2) {
 			ch <- tools.NewProcessToRun()
 		}
 	}()
