@@ -26,7 +26,7 @@ func main() {
 		if err := nowProcess.Process.Kill(); err != nil {
 			log.Println(err)
 		}
-		fmt.Println("正在重启子进程")
+		fmt.Println("正在重启子进程。。")
 		nowProcess = p
 		go run(p)
 	}
