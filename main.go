@@ -14,7 +14,7 @@ func run(cmd *exec.Cmd) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
 
@@ -24,7 +24,7 @@ func main() {
 	go run(nowProcess)
 	for p := range makeCommandChan() {
 		if err := nowProcess.Process.Kill(); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		fmt.Println("正在重启子进程")
 		nowProcess = p
