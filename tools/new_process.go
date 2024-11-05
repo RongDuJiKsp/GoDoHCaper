@@ -6,7 +6,7 @@ import (
 )
 
 func NewProcessToRun() *exec.Cmd {
-	cmd := exec.Command(`godoh`, "agent", "-d", "tunnel.safecv.cn", "-p", "cloudflare")
+	cmd := exec.Command(`godoh`, "agent", "-d", "send.tunvision.work", "-p", "cloudflare")
 	fmt.Println("创建子进程成功")
 	return cmd
 }
