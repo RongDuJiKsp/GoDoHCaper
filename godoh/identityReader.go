@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/emirpasic/gods/v2/queues/arrayqueue"
 	"go-godoh-proxy/child"
 	"strings"
 	"time"
@@ -13,11 +12,10 @@ import (
 type IdentityReader struct {
 	stream           *child.IOStream
 	registerIdentity string
-	recentIdentities *arrayqueue.Queue[string]
 }
 
 func NewIdentityReader(stream *child.IOStream) *IdentityReader {
-	return &IdentityReader{stream, "", arrayqueue.New[string]()}
+	return &IdentityReader{stream, ""}
 }
 
 func (i *IdentityReader) Run(cmd string) {
@@ -37,14 +35,10 @@ func (i *IdentityReader) SyncTickHandle(duration time.Duration, fn func(identity
 		if !*running {
 			break
 		}
-		if i.recentIdentities.Empty() {
+		if i.registerIdentity == "" {
 			continue
 		}
-		for _, v := range i.recentIdentities.Values() {
-			i.Use(v)
-			fn(i.registerIdentity)
-		}
-
+		fn(i.registerIdentity)
 	}
 }
 func (i *IdentityReader) NextLine(line []byte) {
@@ -52,10 +46,7 @@ func (i *IdentityReader) NextLine(line []byte) {
 	if strings.Contains(strLine, "First time checkin for agent") {
 		id, err := getIdByRegisterLine(strLine)
 		if err == nil {
-			i.recentIdentities.Enqueue(id)
-			for i.recentIdentities.Size() > 5 {
-				i.recentIdentities.Dequeue()
-			}
+			i.Use(id)
 		} else {
 			fmt.Println(err)
 		}
