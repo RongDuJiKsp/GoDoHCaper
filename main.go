@@ -29,10 +29,6 @@ func main() {
 			//identity为已连接客户端的id
 			logger.Log("当前已连接客户端：" + identity)
 			logger.Log("正在处理 " + identity)
-			//for _, cmd := range sendCommands {
-			//	logger.Log("执行命令：" + cmd)
-			//	i.Run(cmd)
-			//}
 			//随机生成一条下载文件的命令
 			cmd := grater.MakeFileTransferCommand()
 			logger.Log("执行命令：" + cmd)
