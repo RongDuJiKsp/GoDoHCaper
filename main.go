@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"time"
 )
 
 func run(cmd *exec.Cmd) {
@@ -20,24 +19,7 @@ func run(cmd *exec.Cmd) {
 
 func main() {
 	fmt.Println("开始执行....")
-	nowProcess := tools.NewProcessToRun()
-	go run(nowProcess)
-	for p := range makeCommandChan() {
-		if err := nowProcess.Process.Kill(); err != nil {
-			log.Println(err)
-		}
-		fmt.Println("正在重启子进程。。")
-		nowProcess = p
-		go run(p)
+	for {
+		run(tools.NewProcessToRun())
 	}
-
-}
-func makeCommandChan() chan *exec.Cmd {
-	ch := make(chan *exec.Cmd)
-	go func() {
-		for range time.Tick(time.Minute * 2) {
-			ch <- tools.NewProcessToRun()
-		}
-	}()
-	return ch
 }
