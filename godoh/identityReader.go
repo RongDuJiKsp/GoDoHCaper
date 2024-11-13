@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	MaxClient  = 5
-	FirstStart = 10 * time.Second
-	FreeWait   = 5 * time.Second
+	MaxClient      = 5
+	FirstStart     = 10 * time.Second
+	FreeWait       = 5 * time.Second
+	BallingTimeout = 5 * time.Second
 )
 
 type IdentityReader struct {
@@ -25,10 +26,11 @@ type IdentityReader struct {
 	queueLock        *sync.Mutex
 	cmd              *sync.Mutex
 	turnNext         chan string
+	lastBalling      time.Time
 }
 
 func NewIdentityReader(stream *child.IOStream) *IdentityReader {
-	return &IdentityReader{stream, "", arrayqueue.New[string](), &sync.Mutex{}, &sync.Mutex{}, make(chan string, 500)}
+	return &IdentityReader{stream, "", arrayqueue.New[string](), &sync.Mutex{}, &sync.Mutex{}, make(chan string, 500), time.Now()}
 }
 
 func (i *IdentityReader) Run(cmd string) {
@@ -87,6 +89,10 @@ func (i *IdentityReader) SyncHandleOnBallingOrTimeout(timeout time.Duration, fn 
 			}
 		case <-timer.C:
 			logger.Log("Transfer ", nextClient, " timeout")
+			if time.Now().Sub(i.lastBalling) < BallingTimeout {
+				timer.Reset(timeout)
+				continue
+			}
 			n, err := i.NextClient(false, "")
 			if err == nil {
 				nextClient = n
@@ -113,6 +119,9 @@ func (i *IdentityReader) NextLine(line []byte) {
 	if hasFinished(strLine) {
 		i.turnNext <- i.registerIdentity
 	}
+	if hasBalling(strLine) {
+		i.lastBalling = time.Now()
+	}
 }
 
 func (i *IdentityReader) Close() {
@@ -120,6 +129,12 @@ func (i *IdentityReader) Close() {
 }
 func hasFinished(strLine string) bool {
 	if strings.Contains(strLine, "Writing file to desk") {
+		return true
+	}
+	return false
+}
+func hasBalling(strLine string) bool {
+	if strings.Contains(strLine, "Question had less than 9 labels, bailing") {
 		return true
 	}
 	return false
