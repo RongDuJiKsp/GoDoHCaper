@@ -13,7 +13,7 @@ import (
 
 const (
 	MaxClient  = 5
-	FirstStart = 10
+	FirstStart = 10 * time.Second
 )
 
 type IdentityReader struct {
