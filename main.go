@@ -29,7 +29,7 @@ func main() {
 				logger.Log("当前已连接客户端：" + identity)
 				logger.Log("正在处理 " + identity)
 				i.Use(identity)
-				time.Sleep(2 * time.Second)
+				time.Sleep(2 * time.Second) //DO NOT DELETE
 				//随机生成一条下载文件的命令
 				cmd := grater.MakeFileTransferCommand()
 				logger.Log("执行命令：" + cmd)
