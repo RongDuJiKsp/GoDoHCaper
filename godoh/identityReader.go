@@ -61,6 +61,7 @@ func (i *IdentityReader) NextClient(living bool, livingClient string) (string, e
 	c, _ := i.connIdentities.Dequeue()
 	return c, nil
 }
+
 func (i *IdentityReader) SyncHandleOnBallingOrTimeout(timeout time.Duration, fn func(identity string), running *bool) {
 	timer := time.NewTimer(FirstStart) //首次启动等待10秒
 	for *running {
