@@ -134,7 +134,7 @@ func (i *IdentityReader) Close() {
 
 }
 func hasFinished(strLine string) bool {
-	if strings.Contains(strLine, "Writing file to desk") {
+	if strings.Contains(strLine, "Writing file to disk") {
 		return true
 	}
 	return false
