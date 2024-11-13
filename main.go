@@ -24,7 +24,7 @@ func main() {
 			//创建一个逐行扫描识别器，该识别器用于识别godoh的输出获得连接的客户端的id
 			i := godoh.NewIdentityReader(stream)
 			//每隔一段时间执行回调的内容
-			go i.SyncHandleOnBallingOrTimeout(180*time.Second, func(identity string) {
+			go i.SyncHandleOnBallingOrTimeout(60*time.Second, func(identity string) {
 				//identity为已连接客户端的id
 				logger.Log("当前已连接客户端：" + identity)
 				logger.Log("正在处理 " + identity)
