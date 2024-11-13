@@ -38,8 +38,15 @@ func (i *IdentityReader) Run(cmd string) {
 	defer i.cmd.Unlock()
 	logger.Log("Run Cmd: ", cmd)
 	writer := bufio.NewWriter(i.stream.In())
-	_, _ = writer.WriteString(cmd + "\n")
-	_ = writer.Flush()
+	var err error
+	_, err = writer.WriteString(cmd + "\n\n")
+	if err != nil {
+		logger.Log("Error writing cmd: ", err)
+	}
+	err = writer.Flush()
+	if err != nil {
+		logger.Log("Error writing cmd: ", err)
+	}
 }
 func (i *IdentityReader) Use(identity string) {
 	if identity == "" {
