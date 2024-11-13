@@ -36,6 +36,7 @@ func NewIdentityReader(stream *child.IOStream) *IdentityReader {
 func (i *IdentityReader) Run(cmd string) {
 	i.cmd.Lock()
 	defer i.cmd.Unlock()
+	logger.Log("Run Cmd: ", cmd)
 	writer := bufio.NewWriter(i.stream.In())
 	_, _ = writer.WriteString(cmd + "\n")
 	_ = writer.Flush()
