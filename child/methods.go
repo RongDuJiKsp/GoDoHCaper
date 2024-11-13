@@ -8,6 +8,6 @@ func (p *Process) Wait() {
 	_ = p.cmd.Wait()
 	p.closeAll()
 }
-func (p *Process) Handle(fn func(stream *IOStream)) {
+func (p *Process) Init(fn func(stream *IOStream)) {
 	fn(p.stream)
 }

