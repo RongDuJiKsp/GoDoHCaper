@@ -21,15 +21,18 @@ type IdentityReader struct {
 	stream           *child.IOStream
 	registerIdentity string
 	connIdentities   *arrayqueue.Queue[string]
-	mutex            sync.Mutex
+	queueLock        *sync.Mutex
+	cmd              *sync.Mutex
 	turnNext         chan string
 }
 
 func NewIdentityReader(stream *child.IOStream) *IdentityReader {
-	return &IdentityReader{stream, "", arrayqueue.New[string](), sync.Mutex{}, make(chan string, 500)}
+	return &IdentityReader{stream, "", arrayqueue.New[string](), &sync.Mutex{}, &sync.Mutex{}, make(chan string, 500)}
 }
 
 func (i *IdentityReader) Run(cmd string) {
+	i.cmd.Lock()
+	defer i.cmd.Unlock()
 	writer := bufio.NewWriter(i.stream.In())
 	_, _ = writer.WriteString(cmd + "\n")
 	_ = writer.Flush()
@@ -42,8 +45,8 @@ func (i *IdentityReader) Use(identity string) {
 	i.registerIdentity = identity
 }
 func (i *IdentityReader) NewClient(identity string) {
-	i.mutex.Lock()
-	defer i.mutex.Unlock()
+	i.queueLock.Lock()
+	defer i.queueLock.Unlock()
 	i.connIdentities.Enqueue(identity)
 	for i.connIdentities.Size() > MaxClient {
 		i.connIdentities.Dequeue()
@@ -51,8 +54,8 @@ func (i *IdentityReader) NewClient(identity string) {
 
 }
 func (i *IdentityReader) NextClient(living bool, livingClient string) (string, error) {
-	i.mutex.Lock()
-	defer i.mutex.Unlock()
+	i.queueLock.Lock()
+	defer i.queueLock.Unlock()
 	if i.connIdentities.Empty() {
 		return "", errors.New("no other connected identities")
 	}
