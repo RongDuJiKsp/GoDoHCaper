@@ -83,7 +83,9 @@ func (i *IdentityReader) SyncHandleOnBallingOrTimeout(timeout time.Duration, fn 
 				i.Use(nextClient)
 			}
 		}
-		fn(nextClient)
+		if nextClient != "" {
+			fn(nextClient)
+		}
 		timer.Reset(timeout)
 	}
 }
