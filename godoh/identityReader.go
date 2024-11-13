@@ -98,6 +98,7 @@ func (i *IdentityReader) NextLine(line []byte) {
 	id, err := hasNewClient(strLine)
 	if err != nil {
 		i.NewClient(id)
+		logger.Log("New client ", id)
 	}
 	if hasFinished(strLine) {
 		i.turnNext <- i.registerIdentity
