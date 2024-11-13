@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/emirpasic/gods/v2/queues/arrayqueue"
 	"go-godoh-proxy/child"
+	"go-godoh-proxy/logger"
 	"strings"
 	"sync"
 	"time"
@@ -69,6 +70,7 @@ func (i *IdentityReader) SyncHandleOnBallingOrTimeout(timeout time.Duration, fn 
 		select {
 		case livingClient := <-i.turnNext:
 			timer.Stop()
+			logger.Log("Transfer ", livingClient, " ok")
 			n, err := i.NextClient(true, livingClient)
 			if err != nil {
 				nextClient = livingClient
@@ -77,12 +79,14 @@ func (i *IdentityReader) SyncHandleOnBallingOrTimeout(timeout time.Duration, fn 
 				i.Use(nextClient)
 			}
 		case <-timer.C:
+			logger.Log("Transfer ", nextClient, " timeout")
 			n, err := i.NextClient(false, "")
 			if err == nil {
 				nextClient = n
 				i.Use(nextClient)
 			}
 		}
+		logger.Log("Tick Transfer ", nextClient)
 		if nextClient != "" {
 			fn(nextClient)
 		}
