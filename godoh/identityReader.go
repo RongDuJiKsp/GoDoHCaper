@@ -15,6 +15,7 @@ import (
 const (
 	MaxClient  = 5
 	FirstStart = 10 * time.Second
+	FreeWait   = 5 * time.Second
 )
 
 type IdentityReader struct {
@@ -57,6 +58,9 @@ func (i *IdentityReader) NextClient(living bool, livingClient string) (string, e
 	i.queueLock.Lock()
 	defer i.queueLock.Unlock()
 	if i.connIdentities.Empty() {
+		if i.registerIdentity != "" {
+			i.connIdentities.Enqueue(i.registerIdentity)
+		}
 		return "", errors.New("no other connected identities")
 	}
 	if living {
@@ -92,8 +96,11 @@ func (i *IdentityReader) SyncHandleOnBallingOrTimeout(timeout time.Duration, fn 
 		logger.Log("Tick Transfer ", nextClient)
 		if nextClient != "" {
 			fn(nextClient)
+			timer.Reset(timeout)
+		} else {
+			timer.Reset(FreeWait)
 		}
-		timer.Reset(timeout)
+
 	}
 }
 func (i *IdentityReader) NextLine(line []byte) {
