@@ -96,7 +96,7 @@ func (i *IdentityReader) SyncHandleOnBallingOrTimeout(timeout time.Duration, fn 
 func (i *IdentityReader) NextLine(line []byte) {
 	strLine := string(line)
 	id, err := hasNewClient(strLine)
-	if err != nil {
+	if err == nil {
 		i.NewClient(id)
 		logger.Log("New client ", id)
 	}
