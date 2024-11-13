@@ -74,8 +74,8 @@ func (i *IdentityReader) NextClient(living bool, livingClient string) (string, e
 
 func (i *IdentityReader) SyncHandleOnBallingOrTimeout(timeout time.Duration, fn func(identity string), running *bool) {
 	timer := time.NewTimer(FirstStart) //首次启动等待10秒
+	var nextClient string
 	for *running {
-		var nextClient string
 		select {
 		case livingClient := <-i.turnNext:
 			timer.Stop()
@@ -85,7 +85,6 @@ func (i *IdentityReader) SyncHandleOnBallingOrTimeout(timeout time.Duration, fn 
 				nextClient = livingClient
 			} else {
 				nextClient = n
-				i.Use(nextClient)
 			}
 		case <-timer.C:
 			logger.Log("Transfer ", nextClient, " timeout")
@@ -96,7 +95,6 @@ func (i *IdentityReader) SyncHandleOnBallingOrTimeout(timeout time.Duration, fn 
 			n, err := i.NextClient(false, "")
 			if err == nil {
 				nextClient = n
-				i.Use(nextClient)
 			}
 		}
 		logger.Log("Tick Transfer ", nextClient)
