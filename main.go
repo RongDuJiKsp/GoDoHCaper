@@ -1,25 +1,30 @@
 package main
 
 import (
-	"fmt"
-	"go-godoh-damon/tools"
-	"log"
-	"os"
-	"os/exec"
+	"go-godoh-damon/child"
+	"go-godoh-damon/godoh"
+	"go-godoh-damon/logger"
+	"time"
 )
 
-func run(cmd *exec.Cmd) {
-	fmt.Println("开始执行子进程")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		log.Println(err)
-	}
-}
-
 func main() {
-	fmt.Println("开始执行....")
+	logger.Log("守护程序 开始执行....")
 	for {
-		run(tools.NewProcessToRun())
+		p, err := child.CreateChildProcess(`godoh`, "agent", "-d", "send.tunvision.work", "-p", "cloudflare")
+		if err != nil {
+			logger.Log("What happened? ", err, "WaitExit")
+			time.Sleep(3 * time.Second)
+			continue
+		}
+		logger.Log("子进程创建成功")
+		p.Run(func(stream *child.IOStream) {
+			logger.Log("系统启动")
+			i := godoh.NewExitingReader(stream)
+			go i.SyncWaitKill(p.Cmd())
+			godoh.SyncListen(stream, []godoh.LineReader{i})
+		})
+		p.WaitExit()
+		time.Sleep(1 * time.Second)
+		logger.Log("进程退出，重启中...")
 	}
 }
