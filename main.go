@@ -15,6 +15,7 @@ func main() {
 		if err != nil {
 			logger.Log("What happened? ", err, "WaitExit")
 			time.Sleep(3 * time.Second)
+			continue
 		}
 		logger.Log("子进程创建成功")
 		p.Run(func(stream *child.IOStream) {
