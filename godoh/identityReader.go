@@ -13,24 +13,23 @@ import (
 )
 
 const (
-	MaxClient      = 5
 	FirstStart     = 10 * time.Second
 	FreeWait       = 5 * time.Second
 	BallingTimeout = 5 * time.Second
 )
 
 type IdentityReader struct {
-	stream           *child.IOStream
-	registerIdentity string
-	connIdentities   *arrayqueue.Queue[string]
-	queueLock        *sync.Mutex
-	cmd              *sync.Mutex
-	turnNext         chan string
-	lastBalling      time.Time
+	stream         *child.IOStream
+	connIdentities *arrayqueue.Queue[string]
+	queueLock      *sync.Mutex
+	cmd            *sync.Mutex
+	turnNext       chan struct{}
+	lastBalling    time.Time
+	ballingLock    *sync.Mutex
 }
 
 func NewIdentityReader(stream *child.IOStream) *IdentityReader {
-	return &IdentityReader{stream, "", arrayqueue.New[string](), &sync.Mutex{}, &sync.Mutex{}, make(chan string, 500), time.Now()}
+	return &IdentityReader{stream, arrayqueue.New[string](), &sync.Mutex{}, &sync.Mutex{}, make(chan struct{}, 500), time.Now(), &sync.Mutex{}}
 }
 
 func (i *IdentityReader) Run(cmd string) {
@@ -53,61 +52,61 @@ func (i *IdentityReader) Use(identity string) {
 		return
 	}
 	i.Run("use " + identity)
-	i.registerIdentity = identity
+}
+func (i *IdentityReader) Balling(time time.Time) {
+	i.ballingLock.Lock()
+	defer i.ballingLock.Unlock()
+	i.lastBalling = time
+}
+func (i *IdentityReader) IsTimeout() bool {
+	i.ballingLock.Lock()
+	defer i.ballingLock.Unlock()
+	return time.Now().Sub(i.lastBalling) >= BallingTimeout
 }
 func (i *IdentityReader) NewClient(identity string) {
 	i.queueLock.Lock()
 	defer i.queueLock.Unlock()
 	i.connIdentities.Enqueue(identity)
-	for i.connIdentities.Size() > MaxClient {
-		i.connIdentities.Dequeue()
-	}
-
 }
-func (i *IdentityReader) NextClient(living bool, livingClient string) (string, error) {
+func (i *IdentityReader) NextClient(lastClient string) (string, error) {
 	i.queueLock.Lock()
 	defer i.queueLock.Unlock()
-	if i.connIdentities.Empty() {
-		if i.registerIdentity != "" {
-			i.connIdentities.Enqueue(i.registerIdentity)
-		}
-		return "", errors.New("no other connected identities")
+	if lastClient != "" {
+		i.connIdentities.Enqueue(lastClient)
 	}
-	if living {
-		i.connIdentities.Enqueue(livingClient)
+	c, ok := i.connIdentities.Dequeue()
+	if !ok {
+		return "", errors.New("no client found")
 	}
-	c, _ := i.connIdentities.Dequeue()
 	return c, nil
 }
 
 func (i *IdentityReader) SyncHandleOnBallingOrTimeout(timeout time.Duration, fn func(identity string), running *bool) {
 	timer := time.NewTimer(FirstStart) //首次启动等待10秒
-	var nextClient string
+	var ballingClient string
 	for *running {
 		select {
-		case livingClient := <-i.turnNext:
+		case <-i.turnNext:
 			timer.Stop()
-			logger.Log("Transfer ", livingClient, " ok")
-			n, err := i.NextClient(true, livingClient)
-			if err != nil {
-				nextClient = livingClient
-			} else {
-				nextClient = n
+			logger.Log("Transfer ", ballingClient, " ok")
+			n, err := i.NextClient(ballingClient)
+			if err == nil {
+				ballingClient = n
 			}
 		case <-timer.C:
-			logger.Log("Transfer ", nextClient, " timeout")
-			if time.Now().Sub(i.lastBalling) < BallingTimeout {
+			if i.IsTimeout() {
 				timer.Reset(timeout)
 				continue
 			}
-			n, err := i.NextClient(false, "")
+			logger.Log("Transfer ", ballingClient, " timeout")
+			n, err := i.NextClient("") // timeout bye~
 			if err == nil {
-				nextClient = n
+				ballingClient = n
 			}
 		}
-		logger.Log("Tick Transfer ", nextClient)
-		if nextClient != "" {
-			fn(nextClient)
+		logger.Log("Tick Transfer ", ballingClient)
+		if ballingClient != "" {
+			fn(ballingClient)
 			timer.Reset(timeout)
 		} else {
 			timer.Reset(FreeWait)
@@ -123,10 +122,11 @@ func (i *IdentityReader) NextLine(line []byte) {
 		logger.Log("New client ", id)
 	}
 	if hasFinished(strLine) {
-		i.turnNext <- i.registerIdentity
+		i.Balling(time.Now())
+		i.turnNext <- struct{}{}
 	}
 	if hasBalling(strLine) {
-		i.lastBalling = time.Now()
+		i.Balling(time.Now())
 	}
 }
 
