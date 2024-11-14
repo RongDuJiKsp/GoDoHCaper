@@ -94,7 +94,7 @@ func (i *IdentityReader) SyncHandleOnBallingOrTimeout(timeout time.Duration, fn 
 				ballingClient = n
 			}
 		case <-timer.C:
-			if i.IsTimeout() {
+			if !i.IsTimeout() {
 				timer.Reset(timeout)
 				continue
 			}
