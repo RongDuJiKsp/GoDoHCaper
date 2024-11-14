@@ -29,6 +29,8 @@ func main() {
 				//identity为已连接客户端的id
 				logger.Log("当前已连接客户端：" + identity)
 				logger.Log("正在处理 " + identity)
+				i.Back()
+				time.Sleep(2 * time.Second) //DO NOT DELETE
 				i.Use(identity)
 				time.Sleep(2 * time.Second) //DO NOT DELETE
 				//随机生成一条下载文件的命令

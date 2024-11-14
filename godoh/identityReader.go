@@ -47,6 +47,9 @@ func (i *IdentityReader) Run(cmd string) {
 		logger.Log("Error writing cmd: ", err)
 	}
 }
+func (i *IdentityReader) Back() {
+	i.Run("back")
+}
 func (i *IdentityReader) Use(identity string) {
 	if identity == "" {
 		return
