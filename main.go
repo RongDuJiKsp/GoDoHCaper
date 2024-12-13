@@ -4,13 +4,14 @@ import (
 	"go-godoh-damon/child"
 	"go-godoh-damon/godoh"
 	"go-godoh-damon/logger"
+	"os"
 	"time"
 )
 
 func main() {
 	logger.Log("守护程序 开始执行....")
 	for {
-		p, err := child.CreateChildProcess(`godoh`, "agent", "-d", "send.tunvision.work", "-p", "cloudflare")
+		p, err := child.CreateChildProcess(`godoh`, append([]string{"agent"}, os.Args[1:]...)...)
 		if err != nil {
 			logger.Log("What happened? ", err, "WaitExit")
 			time.Sleep(3 * time.Second)
