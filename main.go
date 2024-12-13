@@ -5,13 +5,14 @@ import (
 	"go-godoh-proxy/godoh"
 	"go-godoh-proxy/grater"
 	"go-godoh-proxy/logger"
+	"os"
 	"time"
 )
 
 func main() {
 	for {
 		// 创建godoh c2客户端
-		p, err := child.CreateChildProcess(`godoh`, "c2", "-d", "send.tunvision.work", "-p", "cloudflare")
+		p, err := child.CreateChildProcess(`godoh`, os.Args...)
 		if err != nil {
 			logger.Log("What happened? ", err, "WaitExit")
 			time.Sleep(3 * time.Second)
